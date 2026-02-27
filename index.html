@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freelance Hourly Rate Calculator - What Should You Charge?</title>
+    <meta name="description" content="Free calculator to determine your freelance hourly rate. Factors in taxes, expenses, and desired income to show what you should actually charge.">
+    <meta name="keywords" content="freelance hourly rate calculator, freelancer rate calculator, what to charge as freelancer, hourly rate calculator">
+    <link rel="canonical" href="https://tadaspi.github.io/freelance-calculator/">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        h1 { color: #1a1a1a; margin-bottom: 10px; font-size: 2rem; }
+        .subtitle { color: #666; margin-bottom: 30px; font-size: 1.1rem; }
+        .calculator { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; font-weight: 600; margin-bottom: 5px; color: #444; }
+        .hint { font-size: 0.85rem; color: #888; margin-bottom: 8px; }
+        input[type="number"] { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem; transition: border-color 0.2s; }
+        input[type="number"]:focus { outline: none; border-color: #2563eb; }
+        button { width: 100%; padding: 15px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #1d4ed8; }
+        .result { margin-top: 30px; padding: 25px; background: #f0f9ff; border-radius: 12px; text-align: center; display: none; }
+        .result.show { display: block; }
+        .rate { font-size: 3rem; font-weight: 700; color: #2563eb; }
+        .rate-label { color: #666; font-size: 1.1rem; }
+        .breakdown { margin-top: 20px; text-align: left; }
+        .breakdown-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0; }
+        .pro-cta { margin-top: 40px; padding: 25px; background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); border-radius: 12px; color: white; text-align: center; }
+        .pro-cta h3 { margin-bottom: 10px; }
+        .pro-cta ul { text-align: left; margin: 15px 0; padding-left: 20px; }
+        .pro-cta a { display: inline-block; margin-top: 15px; padding: 12px 30px; background: white; color: #1e40af; text-decoration: none; border-radius: 8px; font-weight: 600; }
+        .pro-cta a:hover { background: #f0f0f0; }
+        footer { margin-top: 40px; text-align: center; color: #888; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <h1>Freelance Hourly Rate Calculator</h1>
+    <p class="subtitle">Find out what you should <strong>actually</strong> charge based on your expenses, taxes, and income goals.</p>
+    
+    <div class="calculator">
+        <div class="input-group">
+            <label for="income">Desired Annual Take-Home Pay ($)</label>
+            <p class="hint">What you want in your pocket after all expenses and taxes</p>
+            <input type="number" id="income" value="80000" min="0">
+        </div>
+        
+        <div class="input-group">
+            <label for="expenses">Annual Business Expenses ($)</label>
+            <p class="hint">Software, equipment, coworking, insurance, etc.</p>
+            <input type="number" id="expenses" value="5000" min="0">
+        </div>
+        
+        <div class="input-group">
+            <label for="health">Annual Health Insurance ($)</label>
+            <p class="hint">If you pay your own health insurance</p>
+            <input type="number" id="health" value="8000" min="0">
+        </div>
+        
+        <div class="input-group">
+            <label for="vacation">Vacation + Sick Days per Year</label>
+            <p class="hint">Days you won't be billing clients</p>
+            <input type="number" id="vacation" value="20" min="0" max="365">
+        </div>
+        
+        <div class="input-group">
+            <label for="billable">Billable Hours Percentage (%)</label>
+            <p class="hint">What % of your work time is actually billable? (Admin, marketing, invoicing isn't)</p>
+            <input type="number" id="billable" value="60" min="1" max="100">
+        </div>
+        
+        <button onclick="calculate()">Calculate My Rate</button>
+        
+        <div class="result" id="result">
+            <p class="rate-label">Your Minimum Hourly Rate</p>
+            <p class="rate" id="hourlyRate">$0</p>
+            <div class="breakdown" id="breakdown"></div>
+        </div>
+    </div>
+    
+    <div class="pro-cta">
+        <h3>Want More Features?</h3>
+        <ul>
+            <li>Save multiple rate scenarios</li>
+            <li>Compare rates across different clients</li>
+            <li>Export to PDF for proposals</li>
+            <li>Annual revenue projections</li>
+        </ul>
+        <a href="https://hourly-rate-calculator.tp-business.workers.dev">Get Pro Version — $19</a>
+    </div>
+    
+    <footer>
+        <p>Built for freelancers who are tired of undercharging.</p>
+    </footer>
+    
+    <script>
+        function calculate() {
+            const income = parseFloat(document.getElementById('income').value) || 0;
+            const expenses = parseFloat(document.getElementById('expenses').value) || 0;
+            const health = parseFloat(document.getElementById('health').value) || 0;
+            const vacation = parseFloat(document.getElementById('vacation').value) || 0;
+            const billablePct = parseFloat(document.getElementById('billable').value) || 60;
+            
+            // Self-employment tax (15.3%)
+            const selfEmploymentTax = income * 0.153;
+            
+            // Estimated income tax (~25%)
+            const incomeTax = income * 0.25;
+            
+            // Total needed
+            const totalNeeded = income + selfEmploymentTax + incomeTax + expenses + health;
+            
+            // Working days and hours
+            const workingDays = 260 - vacation; // 52 weeks * 5 days - vacation
+            const totalHours = workingDays * 8;
+            const billableHours = totalHours * (billablePct / 100);
+            
+            // Hourly rate
+            const hourlyRate = totalNeeded / billableHours;
+            
+            // Display result
+            document.getElementById('hourlyRate').textContent = '$' + Math.ceil(hourlyRate);
+            document.getElementById('breakdown').innerHTML = `
+                <div class="breakdown-item"><span>Desired take-home</span><span>$${income.toLocaleString()}</span></div>
+                <div class="breakdown-item"><span>Self-employment tax (15.3%)</span><span>$${Math.round(selfEmploymentTax).toLocaleString()}</span></div>
+                <div class="breakdown-item"><span>Estimated income tax (~25%)</span><span>$${Math.round(incomeTax).toLocaleString()}</span></div>
+                <div class="breakdown-item"><span>Business expenses</span><span>$${expenses.toLocaleString()}</span></div>
+                <div class="breakdown-item"><span>Health insurance</span><span>$${health.toLocaleString()}</span></div>
+                <div class="breakdown-item" style="font-weight:600;border-top:2px solid #2563eb;"><span>Total annual revenue needed</span><span>$${Math.round(totalNeeded).toLocaleString()}</span></div>
+                <div class="breakdown-item"><span>Billable hours/year</span><span>${Math.round(billableHours).toLocaleString()}</span></div>
+            `;
+            document.getElementById('result').classList.add('show');
+        }
+        // Calculate on load
+        calculate();
+    </script>
+</body>
+</html>
